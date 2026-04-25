@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-dark-900 text-gray-100 font-sans overflow-x-hidden;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent-gold rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-accent-primary;
+}
+
+/* Global Animations */
+@layer components {
+  .btn-primary {
+    @apply px-6 py-2 bg-accent-gold text-dark-900 font-semibold rounded-lg transition-all duration-300 hover:bg-accent-primary hover:shadow-lg active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-2 border-2 border-accent-gold text-accent-gold font-semibold rounded-lg transition-all duration-300 hover:bg-accent-gold hover:text-dark-900 active:scale-95;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-lg transition-all duration-300 hover:bg-dark-700 cursor-pointer;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-gray-100 placeholder-gray-500 transition-colors focus:outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:shadow-accent-gold/20;
+  }
+
+  .fade-in {
+    @apply animate-fadeIn;
+  }
+
+  .slide-up {
+    @apply animate-slideUp;
+  }
+
+  .slide-down {
+    @apply animate-slideDown;
+  }
+
+  .scale-in {
+    @apply animate-scaleIn;
+  }
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply bg-gradient-to-r from-dark-700 via-dark-600 to-dark-700 bg-[length:1200px_100%] animate-shimmer;
+}
