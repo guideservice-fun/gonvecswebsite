@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowDown, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import QRCode from 'qrcode.react';
+import * as QRCode from 'qrcode';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Transaction } from '@/types';
@@ -14,6 +14,7 @@ export default function WalletPage() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [qrImage, setQrImage] = useState<string | null>(null);
   const [utrNumber, setUtrNumber] = useState('');
   const [amount, setAmount] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -28,15 +29,20 @@ export default function WalletPage() {
 
     const fetchData = async () => {
       try {
-        // Fetch QR code
+        // Fetch QR code URL from admin settings
         const { data: settings } = await supabase
           .from('admin_settings')
           .select('qr_code_url')
           .limit(1)
           .single();
 
-        if (settings) {
-          setQrCode(settings.qr_code_url);
+        if (settings?.qr_code_url) {
+          setQrImage(settings.qr_code_url);
+        } else {
+          // Generate a placeholder QR code
+          const upiUrl = 'upi://pay?pa=merchant@upi&pn=Gonvecs&am=0&tn=Wallet%20TopUp';
+          const qrCodeDataUrl = await QRCode.toDataURL(upiUrl);
+          setQrImage(qrCodeDataUrl);
         }
 
         // Fetch transactions
@@ -147,18 +153,18 @@ export default function WalletPage() {
 
                 <div className="mb-8">
                   <p className="text-gray-400 mb-4">Scan this QR code with any UPI app to send money:</p>
-                  {qrCode ? (
+                  {qrImage ? (
                     <div className="flex justify-center p-6 bg-dark-700 rounded-lg">
                       <img
-                        src={qrCode}
+                        src={qrImage}
                         alt="UPI QR Code"
-                        className="w-64 h-64 object-cover"
+                        className="w-64 h-64 object-cover rounded-lg"
                       />
                     </div>
                   ) : (
                     <div className="flex justify-center p-6 bg-dark-700 rounded-lg">
                       <div className="text-center">
-                        <p className="text-gray-500">No QR code available</p>
+                        <p className="text-gray-500">Loading QR code...</p>
                       </div>
                     </div>
                   )}
