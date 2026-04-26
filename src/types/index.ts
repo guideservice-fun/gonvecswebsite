@@ -20,11 +20,11 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  realPrice: number;
-  oldPrice?: number;
-  categoryId: string;
-  stockTag?: string;
-  isNew: boolean;
+  real_price: number;
+  old_price?: number;
+  category_id: string;
+  stock_tag?: string;
+  is_new: boolean;
   images: ProductImage[];
   createdAt: string;
   updatedAt: string;
@@ -32,32 +32,32 @@ export interface Product {
 
 export interface ProductImage {
   id: string;
-  productId: string;
-  imageUrl: string;
-  isThumbnail: boolean;
-  sortOrder: number;
+  product_id: string;
+  image_url: string;
+  is_thumbnail: boolean;
+  sort_order: number;
 }
 
 export interface Transaction {
   id: string;
-  userId: string;
-  utrNumber: string;
+  user_id: string;
+  utr_number: string;
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
-  adminNotes?: string;
+  admin_notes?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface Order {
   id: string;
-  userId: string;
-  totalAmount: number;
+  user_id: string;
+  total_amount: number;
   status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  shippingAddress: string;
-  shippingCity: string;
-  shippingState: string;
-  shippingPostalCode: string;
+  shipping_address: string;
+  shipping_city: string;
+  shipping_state: string;
+  shipping_postal_code: string;
   trackingNumber?: string;
   items: OrderItem[];
   createdAt: string;
@@ -66,16 +66,16 @@ export interface Order {
 
 export interface OrderItem {
   id: string;
-  orderId: string;
-  productId: string;
+  order_id: string;
+  product_id: string;
   quantity: number;
-  priceAtPurchase: number;
+  price_at_purchase: number;
 }
 
 export interface WishlistItem {
   id: string;
-  userId: string;
-  productId: string;
+  user_id: string;
+  product_id: string;
   product?: Product;
 }
 
@@ -83,4 +83,11 @@ export interface CartItem {
   productId: string;
   quantity: number;
   product?: Product;
+}
+
+export interface AdminSettings {
+  id: string;
+  qr_code_url?: string;
+  updated_by?: string;
+  updated_at: string;
 }
