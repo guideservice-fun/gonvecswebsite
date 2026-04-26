@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { CartItem } from '@/types';
 import { persist } from 'zustand/middleware';
+import { CartItem } from '@/types';
 
 interface CartState {
   items: CartItem[];
@@ -47,7 +47,7 @@ export const useCartStore = create<CartState>()(
       getTotalPrice: () => {
         const state = get();
         return state.items.reduce((total, item) => {
-          return total + (item.product?.realPrice || 0) * item.quantity;
+          return total + (item.product?.real_price || 0) * item.quantity;
         }, 0);
       },
       getTotalItems: () => {
