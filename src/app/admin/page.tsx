@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Lock, LogOut, Package, Users, Wallet, Settings } from 'lucide-react';
+import { Lock, LogOut, Package, Users, Wallet, Settings, Upload } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { generateUPIQRCode } from '@/lib/qrcode-utils';
 import toast, { Toaster } from 'react-hot-toast';
-import { hashPassword, verifyPassword } from '@/lib/auth';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -158,18 +158,10 @@ export default function AdminPage() {
             animate={{ opacity: 1, y: 0 }}
             key={activeTab}
           >
-            {activeTab === 'transactions' && (
-              <AdminTransactions />
-            )}
-            {activeTab === 'products' && (
-              <AdminProducts />
-            )}
-            {activeTab === 'orders' && (
-              <AdminOrders />
-            )}
-            {activeTab === 'settings' && (
-              <AdminSettings />
-            )}
+            {activeTab === 'transactions' && <AdminTransactions />}
+            {activeTab === 'products' && <AdminProducts />}
+            {activeTab === 'orders' && <AdminOrders />}
+            {activeTab === 'settings' && <AdminSettings />}
           </motion.div>
         </div>
       </div>
@@ -257,58 +249,234 @@ function AdminTransactions() {
         </div>
       ) : (
         transactions.map((txn) => (
-          <div
+          <motion.div
             key={txn.id}
-            className="bg-dark-800 border border-dark-700 rounded-lg p-6 flex items-center justify-between"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-dark-800 border border-dark-700 rounded-lg p-6 flex items-center justify-between hover:border-accent-gold transition-colors"
           >
             <div>
               <p className="font-semibold text-gray-100">UTR: {txn.utr_number}</p>
-              <p className="text-sm text-gray-400">Amount: ₹{txn.amount}</p>
+              <p className="text-sm text-gray-400">Amount: ₹{txn.amount.toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                User ID: {txn.user_id}
+              </p>
             </div>
             <div className="flex gap-2">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 onClick={() => handleApprove(txn.id, txn.user_id, txn.amount)}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors font-semibold text-white"
               >
                 Approve
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 onClick={() => handleReject(txn.id)}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors font-semibold text-white"
               >
                 Reject
               </motion.button>
             </div>
-          </div>
+          </motion.div>
         ))
       )}
     </div>
   );
 }
 
-// Placeholder Components
+// Admin Products Component
 function AdminProducts() {
   return (
     <div className="bg-dark-800 border border-dark-700 rounded-lg p-12 text-center">
-      <p className="text-gray-400">Product management coming soon...</p>
+      <Package size={48} className="mx-auto text-gray-500 mb-4" />
+      <p className="text-gray-400 text-lg">Product management coming soon...</p>
     </div>
   );
 }
 
+// Admin Orders Component
 function AdminOrders() {
   return (
     <div className="bg-dark-800 border border-dark-700 rounded-lg p-12 text-center">
-      <p className="text-gray-400">Order management coming soon...</p>
+      <Package size={48} className="mx-auto text-gray-500 mb-4" />
+      <p className="text-gray-400 text-lg">Order management coming soon...</p>
     </div>
   );
 }
 
+// Admin Settings Component
 function AdminSettings() {
+  const [upiId, setUpiId] = useState('');
+  const [merchantName, setMerchantName] = useState('Gonvecs');
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleGenerateQR = async () => {
+    setIsGenerating(true);
+    try {
+      if (!upiId) {
+        toast.error('Please enter UPI ID');
+        return;
+      }
+
+      const qrCode = await generateUPIQRCode(upiId, merchantName);
+      setQrImage(qrCode);
+      toast.success('QR code generated!');
+    } catch (error) {
+      toast.error('Failed to generate QR code');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSaveQR = async () => {
+    setIsSaving(true);
+    try {
+      if (!qrImage) {
+        toast.error('Please generate QR code first');
+        return;
+      }
+
+      // Get existing settings or create new
+      const { data: existing } = await supabase
+        .from('admin_settings')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('admin_settings')
+          .update({ qr_code_url: qrImage })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('admin_settings')
+          .insert({ qr_code_url: qrImage });
+      }
+
+      toast.success('QR code saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save QR code');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="bg-dark-800 border border-dark-700 rounded-lg p-12 text-center">
-      <p className="text-gray-400">Settings management coming soon...</p>
+    <div className="space-y-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-dark-800 border border-dark-700 rounded-lg p-8"
+      >
+        <h2 className="text-2xl font-bold text-gray-100 mb-6">QR Code Settings</h2>
+
+        <div className="space-y-6">
+          {/* UPI ID Input */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              UPI ID
+            </label>
+            <input
+              type="text"
+              placeholder="merchant@upi"
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+              className="input-field"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              E.g., yourname@paytm, yourname@phonepe, etc.
+            </p>
+          </div>
+
+          {/* Merchant Name Input */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              Merchant Name
+            </label>
+            <input
+              type="text"
+              placeholder="Gonvecs"
+              value={merchantName}
+              onChange={(e) => setMerchantName(e.target.value)}
+              className="input-field"
+            />
+          </div>
+
+          {/* Generate QR Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleGenerateQR}
+            disabled={isGenerating}
+            className="btn-primary w-full disabled:opacity-50"
+          >
+            {isGenerating ? 'Generating...' : 'Generate QR Code'}
+          </motion.button>
+
+          {/* QR Preview */}
+          {qrImage && (
+            <div className="bg-dark-700 rounded-lg p-6 text-center">
+              <p className="text-gray-300 mb-4">QR Code Preview:</p>
+              <img
+                src={qrImage}
+                alt="UPI QR Code"
+                className="w-48 h-48 mx-auto rounded-lg border-2 border-accent-gold"
+              />
+              <p className="text-xs text-gray-500 mt-4">
+                This QR code will be displayed to users for wallet top-up
+              </p>
+            </div>
+          )}
+
+          {/* Save QR Button */}
+          {qrImage && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSaveQR}
+              disabled={isSaving}
+              className="btn-secondary w-full disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Upload size={18} />
+              {isSaving ? 'Saving...' : 'Save QR Code'}
+            </motion.button>
+          )}
+        </div>
+      </motion.div>
+
+      {/* System Info */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-dark-800 border border-dark-700 rounded-lg p-8"
+      >
+        <h2 className="text-2xl font-bold text-gray-100 mb-6">System Information</h2>
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Admin Email:</span>
+            <span className="text-accent-gold font-semibold">
+              {process.env.NEXT_PUBLIC_ADMIN_EMAIL}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Environment:</span>
+            <span className="text-accent-gold font-semibold">
+              {process.env.NODE_ENV || 'development'}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">App URL:</span>
+            <span className="text-accent-gold font-semibold">
+              {process.env.NEXT_PUBLIC_APP_URL}
+            </span>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
