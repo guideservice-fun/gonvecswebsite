@@ -6,6 +6,7 @@ export function middleware(request: NextRequest) {
   requestHeaders.set('X-Frame-Options', 'DENY');
   requestHeaders.set('X-Content-Type-Options', 'nosniff');
   requestHeaders.set('X-XSS-Protection', '1; mode=block');
+  requestHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   return NextResponse.next({
     request: {
