@@ -15,6 +15,23 @@ export const ToastProvider: React.FC = () => {
           background: '#111836',
           color: '#e8e8e8',
           border: '1px solid #252d47',
+          borderRadius: '0.5rem',
+          padding: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+        },
+        success: {
+          style: {
+            background: '#10b981',
+            color: '#fff',
+          },
+          icon: '✅',
+        },
+        error: {
+          style: {
+            background: '#ef4444',
+            color: '#fff',
+          },
+          icon: '❌',
         },
       }}
     />
