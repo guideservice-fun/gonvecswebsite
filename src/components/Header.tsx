@@ -80,21 +80,21 @@ export const Header: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="flex items-center gap-3"
             >
-              <Link href="/wishlist" className="btn-icon relative">
-                <Heart size={20} />
+              <Link href="/wishlist" className="btn-icon relative group">
+                <Heart size={20} className="group-hover:text-accent-gold transition-colors" />
               </Link>
 
-              <Link href="/cart" className="btn-icon relative">
-                <ShoppingCart size={20} />
+              <Link href="/cart" className="btn-icon relative group">
+                <ShoppingCart size={20} className="group-hover:text-accent-gold transition-colors" />
                 {totalItems > 0 && (
                   <span className="absolute top-0 right-0 bg-accent-gold text-dark-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {totalItems}
+                    {totalItems > 9 ? '9+' : totalItems}
                   </span>
                 )}
               </Link>
 
-              <Link href={user ? '/account' : '/auth/login'} className="btn-icon">
-                <User size={20} />
+              <Link href={user ? '/account' : '/auth/login'} className="btn-icon group">
+                <User size={20} className="group-hover:text-accent-gold transition-colors" />
               </Link>
             </motion.div>
 
@@ -125,12 +125,20 @@ export const Header: React.FC = () => {
               </Link>
             ))}
             {user && (
-              <button
-                onClick={logout}
-                className="w-full text-left px-4 py-2 text-red-400 hover:bg-dark-800 rounded-lg transition-colors"
-              >
-                Logout
-              </button>
+              <>
+                <Link
+                  href="/wallet"
+                  className="block px-4 py-2 text-gray-300 hover:text-accent-gold hover:bg-dark-800 rounded-lg transition-colors"
+                >
+                  Wallet: ₹{user.walletBalance.toFixed(2)}
+                </Link>
+                <button
+                  onClick={logout}
+                  className="w-full text-left px-4 py-2 text-red-400 hover:bg-dark-800 rounded-lg transition-colors"
+                >
+                  Logout
+                </button>
+              </>
             )}
           </motion.div>
         )}
